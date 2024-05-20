@@ -60,6 +60,7 @@ class APIEvent(SQLModel, table=True):
     error_code: str
     created_at: datetime = datetime.now()
 
+''' Financial Models '''
 # Each Item represents a log-in for a financial institution for Plaid (if user has 2 accounts with 1 institution, they wil be under 1 Item)
 class Item(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -103,8 +104,9 @@ class Account(SQLModel, table=True):
     created_at: datetime = datetime.now()
     updated_at: datetime = datetime.now()
 
-    item_id: int = Field(foreign_key="item.id")
-    item: Item = Relationship(back_populates="accounts")
+    # Cash accounts or manually entered accounts will have no associated Item, so must be optional
+    item_id: int = Field(foreign_key="item.id") | None
+    item: Item | None = Relationship(back_populates="accounts")
 
     transactions: list["Transaction"] = Relationship(back_populates="account")
 
