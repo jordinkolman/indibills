@@ -12,11 +12,13 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     hashed_password: str = Field()
+    email: str
     created_at: datetime
     updated_at: datetime
 
     items: list["Item"] = Relationship(back_populates="user")
     assets: list["Asset"] = Relationship(back_populates="user")
+    manual_accounts: list["ManualAccount"] = Relationship(back_populates="user")
 
 class UserCreate(UserBase):
     password: str
@@ -26,8 +28,13 @@ class UserCreate(UserBase):
 class UserPublic(UserBase):
     id: int
     username: str
+    email: str
     created_at: datetime
     updated_at: datetime
+
+    items: list
+    assets: list
+    manual_accounts: list
 
 class UserUpdate(UserBase):
     username: str | None = None
@@ -76,7 +83,7 @@ class Item(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id")
     user: User = Relationship(back_populates='items')
 
-    accounts: list["Account"] = Relationship(back_populates="item")
+    accounts: list["PlaidAccount"] = Relationship(back_populates="item")
 
 
 class Asset(SQLModel, table=True):
@@ -90,7 +97,7 @@ class Asset(SQLModel, table=True):
     user: User = Relationship(back_populates="assets")
 
 
-class Account(SQLModel, table=True):
+class PlaidAccount(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     plaid_account_id: str = Field(unique=True, index=True)
     name: str = Field(index=True)
@@ -104,14 +111,14 @@ class Account(SQLModel, table=True):
     created_at: datetime = datetime.now()
     updated_at: datetime = datetime.now()
 
-    # Cash accounts or manually entered accounts will have no associated Item, so must be optional
-    item_id: int = Field(foreign_key="item.id") | None
+
+    item_id: int = Field(foreign_key="item.id")
     item: Item | None = Relationship(back_populates="accounts")
 
-    transactions: list["Transaction"] = Relationship(back_populates="account")
+    transactions: list["PlaidTransaction"] = Relationship(back_populates="account")
 
 
-class Transaction(SQLModel, table=True):
+class PlaidTransaction(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     plaid_transaction_id: str = Field(unique=True, index=True)
     plaid_category_id: str | None
@@ -128,5 +135,34 @@ class Transaction(SQLModel, table=True):
     created_at: datetime = datetime.now()
     updated_at: datetime = datetime.now()
 
-    account_id: int = Field(foreign_key="account.id")
-    account: Account = Relationship(back_populates="transactions")
+    account_id: int = Field(foreign_key="plaidaccount.id")
+    account: PlaidAccount = Relationship(back_populates="transactions")
+
+
+class ManualAccount(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    available_balance: float
+    type: str
+    subtype: str
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+
+    user_id: int = Field(foreign_key="user.id")
+    user: User = Relationship(back_populates="manual_accounts")
+
+    transactions: list["ManualTransaction"] = Relationship(back_populates="account")
+
+
+class ManualTransaction(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    category: str | None
+    name: str
+    amount: float
+    date: date
+    pending: bool
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+
+    account_id: int = Field(foreign_key="manualaccount.id")
+    account: ManualAccount = Relationship(back_populates="transactions")

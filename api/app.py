@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from sqlmodel import Session, SQLModel, select
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from passlib.hash import pbkdf2_sha256
 
 import models
@@ -16,6 +17,19 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+origins = [
+    'http://127.0.0.1:5500',
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 def get_session():
     with Session(engine) as session:
@@ -32,9 +46,24 @@ def create_user(*, session: Session = Depends(get_session), user: models.UserCre
     session.refresh(db_user)
     return db_user
 
-@app.get("/users/", response_model=list[models.UserPublic])
+@app.get("/users/")
 def get_users(session: Session = Depends(get_session), offset: int = 0, limit: int = Query(default=100, le=100)):
-    return session.exec(select(models.User).offset(offset).limit(limit)).all()
+    users = session.exec(select(models.User).offset(offset).limit(limit)).all()
+    results = []
+    for user in users:
+        new_user = models.UserPublic(
+            id = user.id,
+            username = user.username,
+            email = user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            items = user.items,
+            assets = user.assets,
+            manual_accounts=user.manual_accounts,
+        )
+        results.append(new_user)
+
+    return {"users": results}
 
 @app.get("/users/{username}", response_model=models.UserPublic)
 def get_user_by_username(*, session: Session = Depends(get_session), username: str):
