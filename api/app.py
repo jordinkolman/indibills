@@ -46,24 +46,9 @@ def create_user(*, session: Session = Depends(get_session), user: models.UserCre
     session.refresh(db_user)
     return db_user
 
-@app.get("/users/")
+@app.get("/users/", response_model=list[models.UserPublic])
 def get_users(session: Session = Depends(get_session), offset: int = 0, limit: int = Query(default=100, le=100)):
-    users = session.exec(select(models.User).offset(offset).limit(limit)).all()
-    results = []
-    for user in users:
-        new_user = models.UserPublic(
-            id = user.id,
-            username = user.username,
-            email = user.email,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            items = user.items,
-            assets = user.assets,
-            manual_accounts=user.manual_accounts,
-        )
-        results.append(new_user)
-
-    return {"users": results}
+    return session.exec(select(models.User).offset(offset).limit(limit)).all()
 
 @app.get("/users/{username}", response_model=models.UserPublic)
 def get_user_by_username(*, session: Session = Depends(get_session), username: str):
