@@ -1,21 +1,46 @@
 
 from datetime import date, datetime
 
+from pydantic import BaseModel
+
 from sqlmodel import Field, Relationship, SQLModel
 
+
+'''Error Models'''
+class Message(BaseModel):
+    message: str
+
+
 ''' User Models '''
+class HouseholdBase(SQLModel):
+    pass
+
+class Household(HouseholdBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime
+    updated_at: datetime
+
+    users: list["User"] = Relationship(back_populates="household")
+
+class HouseholdCreate(HouseholdBase):
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+
+class HouseholdUpdate(HouseholdBase):
+    updated_at: datetime = datetime.now()
+
 class UserBase(SQLModel):
     username: str = Field(index=True)
     email: str = Field(index=True)
 
-
 class User(UserBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     hashed_password: str = Field()
-    email: str
     created_at: datetime
     updated_at: datetime
+    household_id: int | None = Field(default=None, foreign_key="household.id")
 
+    household: Household | None = Relationship(back_populates="users")
     items: list["Item"] = Relationship(back_populates="user")
     assets: list["Asset"] = Relationship(back_populates="user")
     manual_accounts: list["ManualAccount"] = Relationship(back_populates="user")
@@ -31,6 +56,7 @@ class UserPublic(UserBase):
     email: str
     created_at: datetime
     updated_at: datetime
+    household: Household | None
 
     items: list
     assets: list
@@ -41,6 +67,7 @@ class UserUpdate(UserBase):
     password: str | None = None
     email: str | None = None
     updated_at: datetime = datetime.now()
+    household_id: int | None = None
 
 ''' Plaid API Models '''
 # Link Events Table logs responses from Plaid API for client requests to the Plaid Link client
@@ -67,7 +94,7 @@ class APIEvent(SQLModel, table=True):
     error_code: str
     created_at: datetime = datetime.now()
 
-''' Financial Models '''
+''' Plaid Models '''
 # Each Item represents a log-in for a financial institution for Plaid (if user has 2 accounts with 1 institution, they wil be under 1 Item)
 class Item(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -139,19 +166,34 @@ class PlaidTransaction(SQLModel, table=True):
     account: PlaidAccount = Relationship(back_populates="transactions")
 
 
-class ManualAccount(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+''' Manual Account Models '''
+class ManualAccountBase(SQLModel):
     name: str = Field(index=True)
     available_balance: float
     type: str
-    subtype: str
+    subtype: str | None = None
+
+
+class ManualAccountCreate(ManualAccountBase):
     created_at: datetime = datetime.now()
     updated_at: datetime = datetime.now()
+    user_id: int = Field(foreign_key="user.id")
+
+
+class ManualAccount(ManualAccountBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
 
     user_id: int = Field(foreign_key="user.id")
     user: User = Relationship(back_populates="manual_accounts")
-
     transactions: list["ManualTransaction"] = Relationship(back_populates="account")
+
+
+class ManualAccountUpdate(ManualAccountBase):
+    name: str | None = None
+    available_balance: float | None = None
+    type: str | None = None
+    subtype: str | None = None
+    updated_at: datetime = datetime.now()
 
 
 class ManualTransaction(SQLModel, table=True):
