@@ -41,8 +41,9 @@ async def get_user_by_username(*, session: Session = Depends(get_session), usern
 
 @router.get("/id/{user_id}", response_model=UserPublic)
 async def get_user_by_id(*, session: Session = Depends(get_session), user_id: int):
-    user = session.exec(select(User).where(User.id == user_id)).one()
-    if not user:
+    try:
+        user = session.exec(select(User).where(User.id == user_id)).one()
+    except NoResultFound:
         return JSONResponse(status_code=404, content={"message": "User Not Found"})
     return user
 

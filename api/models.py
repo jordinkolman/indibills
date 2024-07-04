@@ -1,5 +1,5 @@
 
-from datetime import date, datetime
+from datetime import date as DateType, datetime
 
 from pydantic import BaseModel
 
@@ -156,7 +156,7 @@ class PlaidTransaction(SQLModel, table=True):
     amount: float
     iso_currency_code: str | None
     unofficial_currency_code: str | None
-    date: date
+    date: DateType
     pending: bool
     account_owner: str | None
     created_at: datetime = datetime.now()
@@ -185,7 +185,18 @@ class ManualAccount(ManualAccountBase, table=True):
 
     user_id: int = Field(foreign_key="user.id")
     user: User = Relationship(back_populates="manual_accounts")
-    transactions: list["ManualTransaction"] = Relationship(back_populates="account")
+
+    m_transactions: list["ManualTransaction"] = Relationship(back_populates="m_account")
+
+
+class ManualAccountPublic(ManualAccountBase):
+    id: int
+    name: str
+    available_balance: float
+    type: str
+    subtype: str | None
+
+    m_transactions: list
 
 
 class ManualAccountUpdate(ManualAccountBase):
@@ -196,15 +207,33 @@ class ManualAccountUpdate(ManualAccountBase):
     updated_at: datetime = datetime.now()
 
 
-class ManualTransaction(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class ManualTransactionBase(SQLModel):
     category: str | None
     name: str
     amount: float
-    date: date
+    date: DateType
     pending: bool
+
+class ManualTransactionCreate(ManualTransactionBase):
     created_at: datetime = datetime.now()
     updated_at: datetime = datetime.now()
 
     account_id: int = Field(foreign_key="manualaccount.id")
-    account: ManualAccount = Relationship(back_populates="transactions")
+
+class ManualTransaction(ManualTransactionBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    created_at: datetime
+    updated_at: datetime
+    account_id: int = Field(foreign_key="manualaccount.id")
+    m_account: ManualAccount = Relationship(back_populates="m_transactions")
+
+
+class ManualTransactionUpdate(ManualTransactionBase):
+    category: str | None = None
+    name: str | None = None
+    amount: float | None = None
+    date: DateType | None = None
+    pending: bool | None = None
+
+    updated_at: datetime = datetime.now()
