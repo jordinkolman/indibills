@@ -1,0 +1,21 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{template "title" .}} - IndiBills</title>
+    <link rel="stylesheet" href="https:/fonts.googleapis.com/css?family=Ubuntu+Mono:400,700">
+</head>
+<body>
+    <header>
+        <h1><a href="/">IndiBills</a></h1>
+    </header>
+    {{template "nav" .}}
+    <main>
+        {{template "main" .}}
+    </main>
+    <footer>Copyright 2024 Jordin Kolman. Powered by <a href="https://go.dev">Go</a> and <a href="https://htmx.org">HTMX</a>.</footer>
+</body>
+</html>
+{{end}}

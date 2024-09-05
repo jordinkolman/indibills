@@ -1,0 +1,24 @@
+{{define "title"}}Users{{end}}
+
+{{define "main"}}
+    <article>
+        {{if .}}
+        <table>
+            <tr>
+                <th>Email</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+            </tr>
+            {{range .}}
+            <tr>
+                <td>{{.Email}}</td>
+                <td>{{.FirstName}}</td>
+                <td>{{.LastName}}</td>
+            </tr>
+            {{end}}
+        </table>
+        {{else}}
+        <p>No users in the Database yet!</p>
+        {{end}}
+    </article>
+{{end}}

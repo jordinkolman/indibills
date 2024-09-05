@@ -1,0 +1,15 @@
+{{define "title"}}Add a User{{end}}
+
+{{define "main"}}
+<form action="/users/create" method="Post">
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email"><br>
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password"><br>
+    <label for="firstName">First Name:</label>
+    <input type="text" name="firstName" id="firstName"><br>
+    <label for="lastName">Last Name:</label>
+    <input type="text" name="lastName" id="lastName"><br>
+    <button type="submit">Submit</button>
+</form>
+{{end}}
