@@ -1,5 +1,12 @@
 package main
 
+// TODO:
+// If a transaction is an ATM withdrawal, it should update the users cash account
+// Generate a cash account on user creation
+// this is where user totals and projections should be calculated
+// For auto-linked accounts w/ or w/o Plaid (if you figure out how to do it without), add option to
+// add a transaction thats missing
+
 import (
 	"flag"
 	"fmt"
