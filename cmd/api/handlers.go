@@ -5,8 +5,17 @@ import (
 	"fmt"
 	"indibills/internal/data"
 	"net/http"
+	"strconv"
 	"strings"
 )
+
+/*
+	TODO: Implement the following handlers
+	get & create transactions
+	get & create assets
+	get & create liabilities
+	get & create budget items
+*/
 
 type UserList []data.User
 
@@ -36,7 +45,6 @@ func (app *application) healthcheck(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 
 }
-
 
 func (app *application) getCreateUsersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -91,11 +99,16 @@ func (app *application) getCreateUsersHandler(w http.ResponseWriter, r *http.Req
 	}
 
 }
+
 // TODO
 func (app *application) getCreateAccountsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		user_id := strings.TrimPrefix(r.URL.Path, fmt.Sprintf("v%v/accounts/users/", data.VERSION))
-		user_id = int64(user_id)
+		user_id, err := strconv.ParseInt(strings.TrimPrefix(r.URL.Path, fmt.Sprintf("v%v/accounts/users/", data.VERSION)), 10, 64)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+
 		users, err := app.models.Accounts.GetAccountById(user_id)
 		if err != nil {
 			fmt.Println(err)

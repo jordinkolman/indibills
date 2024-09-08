@@ -15,10 +15,16 @@ import (
 
 	"indibills/internal/data"
 	"indibills/internal/models"
+
 )
 
+// TODO: Add Transaction List and remove userList
+// App should store current user, accounts, and transactions
+
 type application struct {
+	user *models.UserModel
 	userList *models.UserListModel
+	accountList *models.AccountListModel
 }
 
 func main() {
@@ -26,7 +32,7 @@ func main() {
 	usersEndpoint := flag.String("endpoint", fmt.Sprintf("http://localhost:42069/v%v/users", data.VERSION), "Endpoint for Indibills Users")
 
 	app := &application{
-		userList: &models.UserListModel{Endpoint: *usersEndpoint},
+		user: &models.UserModel{Endpoint: *usersEndpoint},
 	}
 
 	srv := &http.Server{

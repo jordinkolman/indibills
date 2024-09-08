@@ -30,19 +30,15 @@ func (u UserModel) Insert(user *User) error {
 	return u.DB.QueryRow(query, args...).Scan(&user.Id, &user.CreatedAt)
 }
 
-func (u UserModel) Get(id int64) (*User, error) {
-	if id < 1 {
-		return nil, errors.New("record not found")
-	}
-
+func (u UserModel) Get(email string) (*User, error) {
 	query := `
 	SELECT id, email, firstName, lastName
 	FROM users
-	WHERE id = $1`
+	WHERE email = $1`
 
 	var user User
 
-	err := u.DB.QueryRow(query, id).Scan(
+	err := u.DB.QueryRow(query, email).Scan(
 		&user.Id,
 		&user.Email,
 		&user.FirstName,

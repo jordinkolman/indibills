@@ -7,6 +7,8 @@ import (
 )
 
 
+// TODO: figure out how to convert to HTTPS and encrypted transmission
+
 var (
 	healthCheckUrl = fmt.Sprintf("/v%v/healthcheck", data.VERSION)
 	usersUrl = fmt.Sprintf("/v%v/users", data.VERSION)

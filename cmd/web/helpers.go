@@ -14,3 +14,4 @@ func (app *application) HashAndSalt(pwd []byte) string {
 	return string(hash)
 
 }
+

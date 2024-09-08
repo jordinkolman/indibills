@@ -10,5 +10,6 @@ type Models struct {
 func NewModels(db *sql.DB) Models {
 	return Models{
 		Users: UserModel{DB: db},
+		Accounts: AccountModel{DB: db},
 	}
 }
