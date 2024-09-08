@@ -46,11 +46,11 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 	// index and login routes
 	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/login", app.LoginHandler)
-	mux.HandleFunc("/logout", app.LogoutHandler)
+	mux.HandleFunc("/login", app.loginHandler)
+	mux.HandleFunc("/logout", app.logoutHandler)
 	// user routes
 	mux.HandleFunc("/users", app.usersView)
-	mux.HandleFunc("/users/create", app.userCreate)
+	mux.HandleFunc("/signup", app.userCreate)
 	// authenticated routes (accounts etc.)
 	return mux
 }

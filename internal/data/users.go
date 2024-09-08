@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -31,8 +32,9 @@ func (u UserModel) Insert(user *User) error {
 }
 
 func (u UserModel) Get(email string) (*User, error) {
+
 	query := `
-	SELECT id, email, firstName, lastName
+	SELECT id, email, password, firstName, lastName
 	FROM users
 	WHERE email = $1`
 
@@ -41,6 +43,7 @@ func (u UserModel) Get(email string) (*User, error) {
 	err := u.DB.QueryRow(query, email).Scan(
 		&user.Id,
 		&user.Email,
+		&user.Password,
 		&user.FirstName,
 		&user.LastName,
 	)
@@ -54,6 +57,7 @@ func (u UserModel) Get(email string) (*User, error) {
 		}
 
 	}
+	fmt.Printf("Retrieved Successfully. \nId: %v\nEmail:%v\nFirstName:%v\n", user.Id, user.Email, user.FirstName)
 	return &user, nil
 }
 

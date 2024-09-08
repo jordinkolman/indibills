@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"indibills/internal/data"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 /*
@@ -46,16 +49,22 @@ func (app *application) healthcheck(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) getCreateUsersHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getCreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		users, err := app.models.Users.GetAll()
+		vars := mux.Vars(r)
+		email, ok := vars["email"]
+		if !ok {
+			log.Print("email missing from path parameters")
+		}
+
+		user, err := app.models.Users.Get(email)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "error 1", http.StatusInternalServerError)
 			return
 		}
 
-		if err := app.writeJSON(w, http.StatusOK, envelope{"users": users}, nil); err != nil {
+		if err := app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil); err != nil {
 			http.Error(w, "error 2", http.StatusInternalServerError)
 			return
 		}
@@ -89,7 +98,7 @@ func (app *application) getCreateUsersHandler(w http.ResponseWriter, r *http.Req
 		}
 
 		headers := make(http.Header)
-		headers.Set("Location", fmt.Sprintf("v%v/users/%d", data.VERSION, user.Id))
+		headers.Set("Location", fmt.Sprintf("v%v/users/%v", data.VERSION, user.Email))
 
 		err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
 		if err != nil {

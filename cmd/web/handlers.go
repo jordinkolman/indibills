@@ -11,7 +11,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/sessions"
+	"golang.org/x/crypto/bcrypt"
 )
+
 /*
 	TODO: Implement the following handler list
 	Login GET
@@ -25,7 +27,50 @@ import (
 
 var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
 
-func (app *application) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		app.loginGet(w, r)
+	case http.MethodPost:
+		app.loginPost(w, r)
+	default:
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+}
+
+func (app *application) loginGet(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+	}
+	if session.Values["authenticated"] != nil && session.Values["authenticated"] != false {
+		http.Redirect(w, r, "/", http.StatusBadRequest)
+		return
+	}
+
+	files := []string{
+		"../../ui/html/base.html",
+		"../../ui/html/partials/nav.html",
+		"../../ui/html/pages/login.html",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+}
+
+func (app *application) loginPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "please pass the data as URL form encoded", http.StatusBadRequest)
@@ -33,19 +78,22 @@ func (app *application) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	email := r.PostForm.Get("email")
 	password := r.PostForm.Get("password")
-	hashed_password := app.HashAndSalt([]byte(password))
 
 	db_user, err := app.user.Get(email)
-	if err != nil {
-		http.Error(w, "User Not Found", http.StatusNotFound)
+	if err != nil || db_user == nil {
+		fmt.Println("couldn't retrieve user")
+		http.Error(w,fmt.Sprintf("%v", err), http.StatusNotFound)
 		return
 	}
-	session, err := store.Get(r, "session.id")
+	session, err := store.Get(r, "session-name")
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusBadRequest)
+		fmt.Println("couldn't establish session")
+		http.Redirect(w, r, "/", http.StatusBadRequest)
 	}
-
-	if hashed_password == db_user.Password {
+	fmt.Printf("User Password: %v\n", db_user.Password)
+	fmt.Printf("Attempted Password: %v\n", password)
+	err = bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
+		if err == nil {
 		session.Values["authenticated"] = true
 		session.Values["user_id"] = db_user.Id
 		session.Save(r, w)
@@ -57,12 +105,14 @@ func (app *application) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "session.id")
+
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session-name")
 	session.Values["authenticated"] = false
 	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// TODO: Check if user logged in. if yes, redirect to account summary page
@@ -71,7 +121,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := store.Get(r, "session.id")
+	session, err := store.Get(r, "session-name")
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusBadRequest)
 	}
@@ -99,7 +149,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) accountsView(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session.id")
+	session, err := store.Get(r, "session-name")
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusBadRequest)
 	}
@@ -181,7 +231,7 @@ func (app *application) userCreateForm(w http.ResponseWriter) {
 	files := []string{
 		"../../ui/html/base.html",
 		"../../ui/html/partials/nav.html",
-		"../../ui/html/pages/create.html",
+		"../../ui/html/pages/signup.html",
 	}
 
 	ts, err := template.ParseFiles(files...)
@@ -199,6 +249,7 @@ func (app *application) userCreateForm(w http.ResponseWriter) {
 }
 
 func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("made it here")
 	err := r.ParseForm()
 	if err != nil {
 		log.Println(err)
@@ -207,7 +258,8 @@ func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request
 	}
 
 	email := r.PostForm.Get("email")
-	password := app.HashAndSalt([]byte(r.PostForm.Get("password")))
+	password := r.PostForm.Get("password")
+	hashed_password := fmt.Sprintf("%v", app.HashAndSalt([]byte(password)))
 	firstName := r.PostForm.Get("firstName")
 	lastName := r.PostForm.Get("lastName")
 
@@ -218,10 +270,11 @@ func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request
 		LastName  string `json:"lastName"`
 	}{
 		Email:     email,
-		Password:  password,
+		Password:  hashed_password,
 		FirstName: firstName,
 		LastName:  lastName,
 	}
+	fmt.Println(user)
 
 	data, err := json.Marshal(user)
 	if err != nil {
@@ -229,7 +282,8 @@ func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	req, err := http.NewRequest("POST", app.userList.Endpoint, bytes.NewBuffer(data))
+	url := fmt.Sprintf("%v/users/%v", app.user.Endpoint, email)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -251,4 +305,5 @@ func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+
 }

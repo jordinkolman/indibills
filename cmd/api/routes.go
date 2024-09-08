@@ -3,22 +3,22 @@ package main
 import (
 	"fmt"
 	"indibills/internal/data"
-	"net/http"
-)
 
+	"github.com/gorilla/mux"
+)
 
 // TODO: figure out how to convert to HTTPS and encrypted transmission
 
 var (
 	healthCheckUrl = fmt.Sprintf("/v%v/healthcheck", data.VERSION)
-	usersUrl = fmt.Sprintf("/v%v/users", data.VERSION)
-	accountsUrl = fmt.Sprintf("/v%v/accounts", data.VERSION)
+	userUrl       = fmt.Sprintf("/v%v/users/{email}", data.VERSION)
+	accountsUrl    = fmt.Sprintf("/v%v/accounts", data.VERSION)
 )
 
-func (app *application) route() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc(healthCheckUrl, app.healthcheck)
-	mux.HandleFunc(usersUrl, app.getCreateUsersHandler)
-	mux.HandleFunc(accountsUrl, app.getCreateAccountsHandler)
-	return mux
+func (app *application) route() *mux.Router {
+	r := mux.NewRouter()
+	r.HandleFunc(healthCheckUrl, app.healthcheck)
+	r.HandleFunc(userUrl, app.getCreateUserHandler)
+	r.HandleFunc(accountsUrl, app.getCreateAccountsHandler)
+		return r
 }

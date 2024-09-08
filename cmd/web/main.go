@@ -29,10 +29,10 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP network address")
-	usersEndpoint := flag.String("endpoint", fmt.Sprintf("http://localhost:42069/v%v/users", data.VERSION), "Endpoint for Indibills Users")
+	endpoint := flag.String("endpoint", fmt.Sprintf("http://localhost:42069/v%v", data.VERSION), "Endpoint for Indibills Users")
 
 	app := &application{
-		user: &models.UserModel{Endpoint: *usersEndpoint},
+		user: &models.UserModel{Endpoint: *endpoint},
 	}
 
 	srv := &http.Server{
