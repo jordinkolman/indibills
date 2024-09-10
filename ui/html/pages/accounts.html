@@ -1,0 +1,24 @@
+{{define "title"}}Accounts{{end}}
+
+{{define "main"}}
+    <article>
+        {{if .}}
+        <table>
+            <tr>
+                <th>Account Name</th>
+                <th>Account Type</th>
+                <th>Current Balance</th>
+            </tr>
+            {{range .}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Type}}</td>
+                <td>${{.Balance}}</td>
+            </tr>
+            {{end}}
+        </table>
+        {{else}}
+        <p>No accounts for this user yet!</p>
+        {{end}}
+    </article>
+{{end}}

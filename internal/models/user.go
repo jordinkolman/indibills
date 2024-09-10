@@ -34,13 +34,12 @@ type UserListModel struct {
 
 func (m *UserModel) Get(email string) (*User, error) {
 	endpoint := fmt.Sprintf("%s/users/%s", m.Endpoint, email)
-	fmt.Printf("Endpoint: %v\n", endpoint)
 	resp, err := http.Get(endpoint)
 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(resp.Body)
+	
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
@@ -51,10 +50,7 @@ func (m *UserModel) Get(email string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Data: %v\n", data)
-	var temp interface{}
-	fmt.Println(json.Unmarshal(data, &temp))
-	fmt.Printf("%v\n", temp)
+
 	var userResp UserResponse
 
 	err = json.Unmarshal(data, &userResp)

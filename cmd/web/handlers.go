@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
@@ -126,7 +125,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusBadRequest)
 	}
 	if (session.Values["authenticated"] != nil) && session.Values["authenticated"] != false {
-		http.Redirect(w, r, fmt.Sprintf("/users/%v/accounts", session.Values["user_id"]), http.StatusSeeOther)
+		http.Redirect(w, r,"/accounts", http.StatusSeeOther)
 	}
 	files := []string{
 		"../../ui/html/base.html",
@@ -153,17 +152,19 @@ func (app *application) accountsView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusBadRequest)
 	}
-	user_id, err := strconv.ParseInt(session.Values["user_id"].(string), 10, 64)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
+	fmt.Printf("%v\n", session.Values)
+
+	user_id := session.Values["user_id"].(int64)
+	fmt.Printf("%T\n", user_id)
+
 	accounts, err := app.accountList.GetAll(user_id)
+
 	if err != nil {
 		log.Print(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	fmt.Printf("Accounts: %v\n", accounts)
 
 	files := []string{
 		"../../ui/html/base.html",
@@ -184,6 +185,7 @@ func (app *application) accountsView(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
+
 }
 
 func (app *application) usersView(w http.ResponseWriter, r *http.Request) {
@@ -274,7 +276,7 @@ func (app *application) userCreateProcess(w http.ResponseWriter, r *http.Request
 		FirstName: firstName,
 		LastName:  lastName,
 	}
-	fmt.Println(user)
+
 
 	data, err := json.Marshal(user)
 	if err != nil {

@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type Account struct {
@@ -46,9 +47,9 @@ func (a AccountModel) GetAccountById(id int64) (*Account, error) {
 	}
 
 	query := `
-	SELECT id, name, t.type, balance
-	FROM accounts JOIN account_types t ON accounts.type_id = t.id
-	WHERE id = $1`
+	SELECT accounts.id, name, account_types.type, balance
+	FROM accounts JOIN account_types ON accounts.type_id = account_types.id
+	WHERE user_id = $1`
 
 	var account Account
 
@@ -75,11 +76,11 @@ func (a AccountModel) GetAccountsByUserId(id int64) ([]*Account, error) {
 	}
 
 	query := `
-	SELECT id, name, t.type, balance
-	FROM accounts JOIN account_types t ON account.type_id = t.id
+	SELECT accounts.id, name, t.type, balance
+	FROM accounts JOIN account_types t ON accounts.type_id = t.id
 	WHERE user_id = $1`
 
-	rows, err := a.DB.Query(query)
+	rows, err := a.DB.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +88,7 @@ func (a AccountModel) GetAccountsByUserId(id int64) ([]*Account, error) {
 	defer rows.Close()
 
 	accounts := []*Account{}
+
 
 	for rows.Next() {
 		var account Account
@@ -100,12 +102,12 @@ func (a AccountModel) GetAccountsByUserId(id int64) ([]*Account, error) {
 			return nil, err
 		}
 
-		account.user_id = id
-
 		accounts = append(accounts, &account)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+	fmt.Println("Retrieved Sucessfully")
+
 	return accounts, nil
 }

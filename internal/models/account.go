@@ -12,7 +12,7 @@ type Account struct {
 	Name    string  `json:"name"`
 	Type    string  `json:"type"`
 	Balance float64 `json:"balance"`
-	user_id int64
+	user_id int64 `json:"user_id"`
 }
 
 type AccountResponse struct {
@@ -32,10 +32,12 @@ type AccountListModel struct {
 }
 
 func (m *AccountListModel) GetAll(user_id int64) (*[]Account, error) {
-	resp, err := http.Get(fmt.Sprintf("%v/%v", m.Endpoint))
+	endpoint := fmt.Sprintf("%s/%v/accounts", m.Endpoint, user_id)
+	resp, err := http.Get(endpoint)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(resp.Body)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
@@ -49,9 +51,11 @@ func (m *AccountListModel) GetAll(user_id int64) (*[]Account, error) {
 
 	var accountsResp AccountsResponse
 
+
 	err = json.Unmarshal(data, &accountsResp)
 	if err != nil {
 		return nil, err
 	}
+
 	return accountsResp.Accounts, nil
 }

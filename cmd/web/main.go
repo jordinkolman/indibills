@@ -33,6 +33,7 @@ func main() {
 
 	app := &application{
 		user: &models.UserModel{Endpoint: *endpoint},
+		accountList: &models.AccountListModel{Endpoint: *endpoint},
 	}
 
 	srv := &http.Server{

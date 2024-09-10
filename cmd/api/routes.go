@@ -12,7 +12,7 @@ import (
 var (
 	healthCheckUrl = fmt.Sprintf("/v%v/healthcheck", data.VERSION)
 	userUrl       = fmt.Sprintf("/v%v/users/{email}", data.VERSION)
-	accountsUrl    = fmt.Sprintf("/v%v/accounts", data.VERSION)
+	accountsUrl    = fmt.Sprintf("/v%v/{user_id}/accounts", data.VERSION)
 )
 
 func (app *application) route() *mux.Router {

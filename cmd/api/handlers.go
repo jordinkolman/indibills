@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -112,20 +111,20 @@ func (app *application) getCreateUserHandler(w http.ResponseWriter, r *http.Requ
 // TODO
 func (app *application) getCreateAccountsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		user_id, err := strconv.ParseInt(strings.TrimPrefix(r.URL.Path, fmt.Sprintf("v%v/accounts/users/", data.VERSION)), 10, 64)
+		vars := mux.Vars(r)
+		user_id, err := strconv.ParseInt(vars["user_id"], 10, 64)
 		if err != nil {
-			fmt.Println(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		}
 
-		users, err := app.models.Accounts.GetAccountById(user_id)
+		accounts, err := app.models.Accounts.GetAccountsByUserId(user_id)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "error 1", http.StatusInternalServerError)
 			return
 		}
 
-		if err := app.writeJSON(w, http.StatusOK, envelope{"users": users}, nil); err != nil {
+		if err := app.writeJSON(w, http.StatusOK, envelope{"accounts": accounts}, nil); err != nil {
 			http.Error(w, "error 2", http.StatusInternalServerError)
 			return
 		}
