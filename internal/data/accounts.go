@@ -14,11 +14,11 @@ type Account struct {
 	user_id int64
 }
 
-type AccountModel struct {
+type AccountStore struct {
 	DB *sql.DB
 }
 
-func (a AccountModel) Insert(account *Account) error {
+func (a AccountStore) Insert(account *Account) error {
 	var type_id int64
 	err := a.DB.QueryRow(`SELECT id FROM account_types WHERE type = $1`, account.Type).Scan(&type_id)
 	if err != nil {
@@ -40,7 +40,7 @@ func (a AccountModel) Insert(account *Account) error {
 
 }
 
-func (a AccountModel) GetAccountById(id int64) (*Account, error) {
+func (a AccountStore) GetAccountById(id int64) (*Account, error) {
 
 	if id < 1 {
 		return nil, errors.New("record not found")
@@ -70,7 +70,7 @@ func (a AccountModel) GetAccountById(id int64) (*Account, error) {
 	return &account, nil
 }
 
-func (a AccountModel) GetAccountsByUserId(id int64) ([]*Account, error) {
+func (a AccountStore) GetAccountsByUserId(id int64) ([]*Account, error) {
 	if id < 1 {
 		return nil, errors.New("record not found")
 	}

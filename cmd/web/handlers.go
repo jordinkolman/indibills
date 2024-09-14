@@ -45,7 +45,7 @@ func (app *application) loginGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "something went wrong", http.StatusInternalServerError)
 	}
 	if session.Values["authenticated"] != nil && session.Values["authenticated"] != false {
-		http.Redirect(w, r, "/", http.StatusBadRequest)
+		http.Redirect(w, r, "localhost:8080/accounts", http.StatusBadRequest)
 		return
 	}
 

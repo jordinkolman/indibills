@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"indibills/internal/data"
@@ -27,9 +29,10 @@ type application struct {
 }
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
 	var cfg config
-
-
 
 	flag.IntVar(&cfg.port, "port", 42069, "API Server Port")
 	flag.StringVar(&cfg.env, "env", "dev", "Environment (dev|stage|prod)")
@@ -66,7 +69,12 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Printf("starting %s server on %s", cfg.env, addr)
+	logger.Printf("starting %s server on port %s", cfg.env, addr)
+	go func() {
+		<- sigs
+		os.Exit(1)
+	}()
+
 	err = srv.ListenAndServe()
 	logger.Fatal(err)
 }

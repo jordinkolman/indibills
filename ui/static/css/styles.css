@@ -1,0 +1,17 @@
+:root {
+    --blue: #e7f6ff;
+    --green: #FFEDFA;
+    --grey: #E3EDF8;
+    --purple: #FAF5FF;
+    --pink: #FFEDFA;
+    --cream: #FEF5EA;
+    --white: #FBFCF8;
+}
+
+.table {
+    border: 2px solid black;
+}
+
+td {
+    color: red;
+}

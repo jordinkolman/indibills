@@ -4,12 +4,12 @@ import "database/sql"
 
 type Models struct {
 	Users UserModel
-	Accounts AccountModel
+	Accounts AccountStore
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
 		Users: UserModel{DB: db},
-		Accounts: AccountModel{DB: db},
+		Accounts: AccountStore{DB: db},
 	}
 }
