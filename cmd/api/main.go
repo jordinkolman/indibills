@@ -71,7 +71,8 @@ func main() {
 
 	logger.Printf("starting %s server on port %s", cfg.env, addr)
 	go func() {
-		<- sigs
+		<-sigs
+		logger.Fatal("server interrupted by user")
 		os.Exit(1)
 	}()
 

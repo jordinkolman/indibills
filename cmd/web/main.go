@@ -12,36 +12,53 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"indibills/internal/data"
 	"indibills/internal/models"
-
 )
 
 // TODO: Add Transaction List and remove userList
 // App should store current user, accounts, and transactions
 
 type application struct {
-	user *models.UserModel
-	userList *models.UserListModel
-	accountList *models.AccountListModel
+	logger   *log.Logger
+	user     *models.UserModel
+	accounts *models.AccountListModel
 }
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP network address")
 	endpoint := flag.String("endpoint", fmt.Sprintf("http://localhost:42069/v%v", data.VERSION), "Endpoint for Indibills Users")
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	app := &application{
-		user: &models.UserModel{Endpoint: *endpoint},
-		accountList: &models.AccountListModel{Endpoint: *endpoint},
+		logger:   logger,
+		user:     &models.UserModel{Endpoint: *endpoint},
+		accounts: &models.AccountListModel{Endpoint: *endpoint},
 	}
 
 	srv := &http.Server{
-		Addr:    *addr,
-		Handler: app.routes(),
+		Addr:         *addr,
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Printf("Starting the server on port %s", *addr)
+	logger.Printf("Starting the server on port %s", *addr)
+	go func() {
+		<-sigs
+		logger.Fatal("server interrupted by user")
+		os.Exit(1)
+	}()
+
 	err := srv.ListenAndServe()
-	log.Fatal(err)
+	logger.Fatal(err)
 }

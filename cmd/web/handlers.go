@@ -157,7 +157,7 @@ func (app *application) accountsView(w http.ResponseWriter, r *http.Request) {
 	user_id := session.Values["user_id"].(int64)
 	fmt.Printf("%T\n", user_id)
 
-	accounts, err := app.accountList.GetAll(user_id)
+	accounts, err := app.accounts.GetAll(user_id)
 
 	if err != nil {
 		log.Print(err)
@@ -186,35 +186,6 @@ func (app *application) accountsView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-}
-
-func (app *application) usersView(w http.ResponseWriter, r *http.Request) {
-	users, err := app.userList.GetAll()
-	if err != nil {
-		log.Print(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	files := []string{
-		"../../ui/html/base.html",
-		"../../ui/html/partials/nav.html",
-		"../../ui/html/pages/users.html",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", users)
-	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
 }
 
 func (app *application) userCreate(w http.ResponseWriter, r *http.Request) {
