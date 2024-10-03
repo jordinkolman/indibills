@@ -20,5 +20,5 @@ func (app *application) route() *mux.Router {
 	r.HandleFunc(healthCheckUrl, app.healthcheck)
 	r.HandleFunc(userUrl, app.getCreateUserHandler)
 	r.HandleFunc(accountsUrl, app.getCreateAccountsHandler)
-		return r
+	return r
 }

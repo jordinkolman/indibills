@@ -9,18 +9,18 @@ package main
 	TODO /users                        GET                     endpoint for viewing a list of all users. Should only be accessible by site adminX
 	! all endpoints below require an authenticated user and use the passed in user_id from the session variables
 	TODO /users                        PUT/PATCH, DELETE       endpoint for updating or deleting a specific user record from the database
-	/accounts                     GET, POST               endpoint for adding an account record to the database, or retrieving a list of all accounts for the specified user
+	TODO /accounts                     GET, POST               endpoint for adding an account record to the database, or retrieving a list of all accounts for the specified user
 	TODO /transactions                 GET, POST               endpoint for adding or retrieving transaction records for a specific user
 	TODO /assets                       GET, POST               endpoint for adding or retrieving asset (property) records for a specific user
 	TODO /liabilities                  GET, POST               endpoint for adding or retrieving liability (debt) records for a specific user
 	TODO /goals                        GET, POST               endpoint for adding or retrieving all budget goal item records for a specific user
 	/users/{email}                GET, POST               retrieving and creating a specific user record from the database. Email passed in via path parameters
 		TODO - consider implementation of readinglist and decide if /users/ or /users is best for GET requests
-	? /accounts/                    GET, PUT/PATCH, DELETE       modifying and deleting a specific account record from the database
-	? /transactions/                GET, PUT/PATCH, DELETE       modifying and deleting a specific transaction record from the database
-	? /assets/                      GET, PUT/PATCH, DELETE       modifying and deleting a specific account asset from the database
-	? /liabilities/                 GET, PUT/PATCH, DELETE       modifying and deleting a specific account liability from the database
-	? /goals/                       GET, PUT/PATCH, DELETE       modifying and deleting a specific budget goal item record from the database
+	TODO /accounts/                    GET, PATCH, DELETE       endpoint for retrieving, modifying and deleting a specific account record from the database
+	TODO /transactions/                GET, PATCH, DELETE       endpoint for retrieving, modifying and deleting a specific transaction record from the database
+	TODO /assets/                      GET, PATCH, DELETE       endpoint for retrieving, modifying and deleting a specific asset from the database
+	TODO /liabilities/                 GET, PATCH, DELETE       endpoint for retrieving, modifying and deleting a specific liability from the database
+	TODO /goals/                       GET, PATCH, DELETE       endpoint for retrieving, modifying and deleting a specific budget goal item record from the database
 
 
 
@@ -138,12 +138,12 @@ func (app *application) getCreateUserHandler(w http.ResponseWriter, r *http.Requ
 }
 //! Associated endpoint: /accounts
 func (app *application) getCreateAccountsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	user_id, err := strconv.ParseInt(vars["user_id"], 10, 64)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	}
 	if r.Method == http.MethodGet {
-		vars := mux.Vars(r)
-		user_id, err := strconv.ParseInt(vars["user_id"], 10, 64)
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		}
 
 		accounts, err := app.models.Accounts.GetAccountsByUserId(user_id)
 		if err != nil {
@@ -158,12 +158,12 @@ func (app *application) getCreateAccountsHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
-	/* if r.Method == http.MethodPost {
+	 if r.Method == http.MethodPost {
 		var input struct {
-			Email     string `json:"email"`
-			Password  string `json:"password"`
-			FirstName string `json:"firstName"`
-			LastName  string `json:"lastName"`
+			Name string `json:"name"`
+			Type string `json:"type"`
+			Balance float64 `json:"balance"`
+			User_id int64 `json:"user_id"`
 		}
 
 		err := app.readJSON(w, r, &input)
@@ -172,27 +172,28 @@ func (app *application) getCreateAccountsHandler(w http.ResponseWriter, r *http.
 			return
 		}
 
-		user := &data.User{
-			Email:     input.Email,
-			Password:  input.Password,
-			FirstName: input.FirstName,
-			LastName:  input.LastName,
+		account := &data.Account{
+			Name: input.Name,
+			Type: input.Type,
+			Balance: input.Balance,
+			User_id: user_id,
 		}
 
-		err = app.models.Users.Insert(user)
+		err = app.models.Accounts.Insert(account)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println(err)
+			http.Error(w, "could not create account", http.StatusBadRequest)
 			return
 		}
 
 		headers := make(http.Header)
-		headers.Set("Location", fmt.Sprintf("v%v/users/%d", data.VERSION, user.Id))
+		headers.Set("Location", fmt.Sprintf("v%v/accounts/%d", data.VERSION, account.Id))
 
-		err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
+		err = app.writeJSON(w, http.StatusCreated, envelope{"account": account}, headers)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-	}*/
+	}
 
 }

@@ -21,4 +21,16 @@
         <p>No accounts for this user yet!</p>
         {{end}}
     </article>
+    <form action="/accounts" method="Post">
+        <label for="name">Account Name:</label>
+        <input type="text" name="name" id="name">
+        <label for="type">Account Type:</label>
+        <select name="type" id="type">
+            <option>checking</option>
+            <option>savings</option>
+        </select>
+        <label for="balance">Balance:</label>
+        <input type="number" name="balance" id="balance" min="0" value="0" step=".01">
+        <input type="submit">
+    </form>
 {{end}}

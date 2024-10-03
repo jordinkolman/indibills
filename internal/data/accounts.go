@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 )
 
 type Account struct {
@@ -11,7 +12,7 @@ type Account struct {
 	Name    string  `json:"name"`
 	Type    string  `json:"type"`
 	Balance float64 `json:"balance"`
-	user_id int64
+	User_id int64 `json:"user_id"`
 }
 
 type AccountStore struct {
@@ -21,6 +22,7 @@ type AccountStore struct {
 func (a AccountStore) Insert(account *Account) error {
 	var type_id int64
 	err := a.DB.QueryRow(`SELECT id FROM account_types WHERE type = $1`, account.Type).Scan(&type_id)
+	log.Println(account.Type, type_id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -31,11 +33,11 @@ func (a AccountStore) Insert(account *Account) error {
 	}
 
 	query := `
-		INSERT INTO accounts (name, t., balance, user_id)
+		INSERT INTO accounts (name, type_id, balance, user_id)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id`
 
-	args := []interface{}{account.Name, type_id, account.Balance, account.user_id}
+	args := []interface{}{account.Name, type_id, account.Balance, account.User_id}
 	return a.DB.QueryRow(query, args...).Scan(&account.Id)
 
 }

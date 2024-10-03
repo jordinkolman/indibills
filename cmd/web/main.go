@@ -19,6 +19,8 @@ import (
 
 	"indibills/internal/data"
 	"indibills/internal/models"
+
+	"github.com/gorilla/sessions"
 )
 
 // TODO: Add Transaction List and remove userList
@@ -28,6 +30,16 @@ type application struct {
 	logger   *log.Logger
 	user     *models.UserModel
 	accounts *models.AccountListModel
+}
+
+var store = sessions.NewCookieStore([]byte("STRING"))
+
+func init() {
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   3600 * 1,
+		HttpOnly: true,
+		}
 }
 
 func main() {

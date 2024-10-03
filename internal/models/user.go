@@ -39,7 +39,7 @@ func (m *UserModel) Get(email string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
@@ -57,7 +57,7 @@ func (m *UserModel) Get(email string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("User Response: %v\n", userResp)
+	fmt.Printf("User Response: %v\n", userResp.User)
 	return userResp.User, nil
 }
 

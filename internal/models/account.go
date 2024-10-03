@@ -12,7 +12,7 @@ type Account struct {
 	Name    string  `json:"name"`
 	Type    string  `json:"type"`
 	Balance float64 `json:"balance"`
-	user_id int64 `json:"user_id"`
+	User_id int64 `json:"user_id"`
 }
 
 type AccountResponse struct {

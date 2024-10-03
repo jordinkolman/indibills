@@ -8,10 +8,6 @@
     --white: #FBFCF8;
 }
 
-.table {
-    border: 2px solid black;
-}
-
-td {
-    color: red;
+body {
+    background-color: red;
 }

@@ -50,6 +50,6 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("/logout", app.logoutHandler)
 	mux.HandleFunc("/signup", app.userCreate)
 	// authenticated routes (accounts etc.)
-	mux.HandleFunc("/accounts", app.accountsView)
+	mux.HandleFunc("/accounts", app.accountsHandler)
 	return mux
 }
