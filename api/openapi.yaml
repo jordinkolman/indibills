@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Indibills API
+  version: 0.1.0
+servers:
+  - url: https://api.indibills.dev
+paths:
+  /auth/signup:
+    post:
+      summary: Create user
+  /accounts:
+    get:
+      summary: List accounts
+  /transactions:
+    get:
+      summary: List transactions
+    post:
+      summary: Create manual transaction
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+  /schedules:
+    get:
+      summary: List schedules
+    post:
+      summary: Create schedule (manual)
+  /schedules/{id}/occurrences:
+    get:
+      summary: List occurrences
+  /schedules/from-transaction:
+    post:
+      summary: Create schedule by labeling an existing transaction
+  /transactions/{id}/link-schedule:
+    post:
+      summary: Link a transaction to a schedule occurrence
+  /runway:
+    get:
+      summary: Get runway summary
+      parameters:
+        - in: query
+          name: optimism
+          schema:
+            type: string
+            enum: [conservative, neutral, optimistic]
+  /buffer/settings:
+    get:
+      summary: Get unexpected-spend buffer settings
+    put:
+      summary: Update unexpected-spend buffer settings
+  /plaid/link/token:
+    post:
+      summary: Create link token
+  /plaid/item/exchange:
+    post:
+      summary: Exchange public_token for access_token
+  /webhooks/plaid:
+    post:
+      summary: Plaid webhook receiver
+components:
+  schemas:
+    Money:
+      type: object
+      properties:
+        amount_cents:
+          type: integer
+        currency:
+          type: string
+          enum: [USD]
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [asset, liability]
+        balance:
+          $ref: '#/components/schemas/Money'
+    RunwaySummary:
+      type: object
+      properties:
+        days:
+          type: integer
+        zero_date:
+          type: string
+          format: date
+        assumptions:
+          type: array
+          items:
+            type: string
